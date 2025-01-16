@@ -4,11 +4,15 @@ import {
   EuiBasicTable,
   EuiBasicTableColumn,
   EuiPanel,
+  EuiProvider,
   EuiTableSortingType,
 } from "@elastic/eui";
 import "./App.css";
 import { gql, useQuery } from "@apollo/client";
 import { useState } from "react";
+
+
+
 
 
 
@@ -90,8 +94,8 @@ function App() {
   };
 
   // Manually handle sorting and pagination of data
-  const findUsers = (
-    users: Country[],
+  const findCountry = (
+    countries: Country[],
     pageIndex: number,
     pageSize: number,
     sortField: keyof Country,
@@ -100,13 +104,13 @@ function App() {
     let items;
 
     if (sortField) {
-      items = users
+      items = countries
         .slice(0)
         .sort(
           Comparators.property(sortField, Comparators.default(sortDirection))
         );
     } else {
-      items = users;
+      items = countries;
     }
 
     let pageOfItems;
@@ -117,17 +121,17 @@ function App() {
       const startIndex = pageIndex * pageSize;
       pageOfItems = items.slice(
         startIndex,
-        Math.min(startIndex + pageSize, users.length)
+        Math.min(startIndex + pageSize, countries.length)
       );
     }
 
     return {
       pageOfItems,
-      totalItemCount: users.length,
+      totalItemCount: countries.length,
     };
   };
 
-  const { pageOfItems, totalItemCount } = findUsers(
+  const { pageOfItems, totalItemCount } = findCountry(
     countries,
     pageIndex,
     pageSize,
@@ -152,18 +156,21 @@ function App() {
   console.log(sorting, "sorting");
   console.log(pagination, "pagination");
   console.log(onTableChange, "onTableChange");
-
+  console.log(pageOfItems, "pageOfItems");
   return (
+    <EuiProvider>
     <EuiPanel hasShadow hasBorder>
       <EuiBasicTable
         className="table"
-        items={pageOfItems}
+        items={countries}
         columns={columns}
         // sorting={sorting}
         // pagination={pagination}
         // onChange={onTableChange}
       />
+
     </EuiPanel>
+    </EuiProvider>
   );
 }
 
