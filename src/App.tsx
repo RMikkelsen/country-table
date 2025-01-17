@@ -3,6 +3,7 @@ import {
   Criteria,
   EuiBasicTable,
   EuiBasicTableColumn,
+  EuiFieldSearch,
   EuiPanel,
   EuiProvider,
   EuiTableSortingType,
@@ -10,11 +11,6 @@ import {
 import "./App.css";
 import { gql, useQuery } from "@apollo/client";
 import { useState } from "react";
-
-
-
-
-
 
 interface Country {
   code?: string;
@@ -42,9 +38,11 @@ function App() {
   const { loading, error, data } = useQuery(COUNTRY);
 
   const [pageIndex, setPageIndex] = useState(0);
-  const [pageSize, setPageSize] = useState(5);
+  const [pageSize, setPageSize] = useState(20);
   const [sortField, setSortField] = useState<keyof Country>("name");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
+
+  const [filterText, setFilterText] = useState("");
 
   if (loading) return <p>Loading Countries...</p>;
   if (error) return <p>Error Loading Countries!</p>;
@@ -92,6 +90,10 @@ function App() {
       setSortDirection(sortDirection);
     }
   };
+  const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setFilterText(event.target.value.toLowerCase());
+    setPageIndex(0); // Reset to the first page after filtering
+  };
 
   // Manually handle sorting and pagination of data
   const findCountry = (
@@ -99,34 +101,36 @@ function App() {
     pageIndex: number,
     pageSize: number,
     sortField: keyof Country,
-    sortDirection: 'asc' | 'desc'
+    sortDirection: "asc" | "desc",
+    filterText: string
   ) => {
-    let items;
+    // Filter by search query
+    const filteredCountries = countries.filter(
+      (country) =>
+        country.code?.toLowerCase().includes(filterText) ||
+        country.name?.toLowerCase().includes(filterText) ||
+        country.continent?.toString()?.toLowerCase().includes(filterText)
+    );
 
+    // Sort the data
+    let sortedCountries = filteredCountries;
     if (sortField) {
-      items = countries
-        .slice(0)
+      sortedCountries = filteredCountries
+        .slice()
         .sort(
           Comparators.property(sortField, Comparators.default(sortDirection))
         );
-    } else {
-      items = countries;
     }
 
-    let pageOfItems;
-
-    if (!pageIndex && !pageSize) {
-      pageOfItems = items;
-    } else {
-      const startIndex = pageIndex * pageSize;
-      pageOfItems = items.slice(
-        startIndex,
-        Math.min(startIndex + pageSize, countries.length)
-      );
-    }
+    // Paginate the data
+    const startIndex = pageIndex * pageSize;
+    const paginatedCountries = sortedCountries.slice(
+      startIndex,
+      Math.min(startIndex + pageSize, sortedCountries.length)
+    );
 
     return {
-      pageOfItems,
+      pageOfItems: paginatedCountries,
       totalItemCount: countries.length,
     };
   };
@@ -136,40 +140,53 @@ function App() {
     pageIndex,
     pageSize,
     sortField,
-    sortDirection
+    sortDirection,
+    filterText
   );
 
   const pagination = {
     pageIndex: pageIndex,
     pageSize: pageSize,
     totalItemCount: totalItemCount,
-    pageSizeOptions: [3, 5, 8],
+    pageSizeOptions: [10, 20, 40],
   };
 
   const sorting: EuiTableSortingType<Country> = {
     sort: {
       field: sortField,
       direction: sortDirection,
-    }
+    },
   };
 
-  console.log(sorting, "sorting");
-  console.log(pagination, "pagination");
-  console.log(onTableChange, "onTableChange");
-  console.log(pageOfItems, "pageOfItems");
+  console.log(pagination, sorting);
   return (
     <EuiProvider>
-    <EuiPanel hasShadow hasBorder>
-      <EuiBasicTable
-        className="table"
-        items={countries}
-        columns={columns}
-        // sorting={sorting}
-        // pagination={pagination}
-        // onChange={onTableChange}
-      />
-
-    </EuiPanel>
+      <EuiPanel hasShadow hasBorder>
+        {/* <EuiFieldSearch
+          placeholder="Search by Code, Name, or Continent"
+          value={filterText}
+          onChange={handleSearch}
+          isClearable
+          aria-label="Filter countries"
+          fullWidth
+        /> */}
+        <input
+          type="text"
+          placeholder="Search by Code, Name, or Continent"
+          value={filterText}
+          onChange={handleSearch}
+         className="filterInput"
+        />
+        <EuiBasicTable
+          className="table"
+          items={pageOfItems}
+          columns={columns}
+          // sorting={sorting}
+          // pagination={pagination}
+          onChange={onTableChange}
+        />
+        <div>Total Countries {totalItemCount}</div>
+      </EuiPanel>
     </EuiProvider>
   );
 }
