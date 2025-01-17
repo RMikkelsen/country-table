@@ -1,3 +1,9 @@
+.header{
+  font-size: 3rem;
+  text-align: center;
+  padding: 2rem;
+}
+
 .filterInput {
   width: 100%;
   padding: 1rem;

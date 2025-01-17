@@ -3,7 +3,6 @@ import {
   Criteria,
   EuiBasicTable,
   EuiBasicTableColumn,
-  EuiFieldSearch,
   EuiPanel,
   EuiProvider,
   EuiTableSortingType,
@@ -65,16 +64,18 @@ function App() {
       field: "name",
       name: "Name",
       sortable: true,
+
     },
     {
       field: "emoji",
       name: "Emoji",
+
     },
     {
       field: "continent",
       name: "Continent",
       sortable: true,
-      render: (continent: string) => <strong>{continent}</strong>,
+
     },
   ];
 
@@ -95,7 +96,7 @@ function App() {
     setPageIndex(0); // Reset to the first page after filtering
   };
 
-  // Manually handle sorting and pagination of data
+  //  sorting and pagination of data
   const findCountry = (
     countries: Country[],
     pageIndex: number,
@@ -162,6 +163,7 @@ function App() {
   return (
     <EuiProvider>
       <EuiPanel hasShadow hasBorder>
+        <h1 className="header">Table Country List</h1>
         {/* <EuiFieldSearch
           placeholder="Search by Code, Name, or Continent"
           value={filterText}
@@ -175,7 +177,7 @@ function App() {
           placeholder="Search by Code, Name, or Continent"
           value={filterText}
           onChange={handleSearch}
-         className="filterInput"
+          className="filterInput"
         />
         <EuiBasicTable
           className="table"
@@ -185,7 +187,7 @@ function App() {
           // pagination={pagination}
           onChange={onTableChange}
         />
-        <div>Total Countries {totalItemCount}</div>
+        <div>Total Countries Shown: {pageOfItems.length} / {countries.length}</div>
       </EuiPanel>
     </EuiProvider>
   );
